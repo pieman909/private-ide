@@ -325,7 +325,7 @@ public:
         
         // Set up network manager for API requests
         //networkManager = new QNetworkAccessManager(this);
-        connect(networkManager, &QNetworkAccessManager::finished, this, &GeminiWidget::handleApiResponse);
+        //connect(networkManager, &QNetworkAccessManager::finished, this, &GeminiWidget::handleApiResponse);
         
         // Load saved configuration
         loadConfig();
