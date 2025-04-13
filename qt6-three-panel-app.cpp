@@ -13,7 +13,7 @@
 #include <QFormLayout>
 //#include <QNetworkAccessManager>
 //#include <QNetworkReply>
-#include <QNetworkRequest>
+//#include <QNetworkRequest>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
