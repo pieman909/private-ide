@@ -11,7 +11,7 @@
 #include <QPushButton>
 #include <QGroupBox>
 #include <QFormLayout>
-#include <QNetworkAccessManager>
+//#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QJsonDocument>
