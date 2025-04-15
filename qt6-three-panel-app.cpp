@@ -344,10 +344,105 @@ private slots:
         if (rect.contains(viewport()->rect()))
             updateLineNumberAreaWidth(0);
     }
+    
+    void highlightCurrentLine() {
+        QList<QTextEdit::ExtraSelection> extraSelections;
+
+        // Highlight current line
+        if (!isReadOnly()) {
+            QTextEdit::ExtraSelection selection;
+            QColor lineColor = QColor("#2D2D30").lighter(120);
+            selection.format.setBackground(lineColor);
+            selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+            selection.cursor = textCursor();
+            selection.cursor.clearSelection();
+            extraSelections.append(selection);
+        }
+        
+        // Add bracket matching highlighting if enabled
+        if (bracketMatchingEnabled && bracketPos != -1) {
+            QTextEdit::ExtraSelection selection;
+            selection.format.setBackground(QColor("#664B0082"));
+            selection.format.setForeground(Qt::white);
+            selection.cursor = textCursor();
+            selection.cursor.setPosition(bracketPos);
+            selection.cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, bracketLength);
+            extraSelections.append(selection);
+        }
+        
+        setExtraSelections(extraSelections);
+    }
+    
+    void handleTextChanged() {
+        // Perform any needed actions when text changes
+        if (bracketMatchingEnabled) {
+            matchBrackets();
+        }
+    }
+    
+    void matchBrackets() {
+        bracketPos = -1;
+        bracketLength = 0;
+        
+        QTextCursor cursor = textCursor();
+        int position = cursor.position();
+        
+        if (position == 0) {
+            highlightCurrentLine();
+            return;
+        }
+        
+        // Check character before cursor
+        cursor.setPosition(position - 1);
+        QString text = toPlainText();
+        QChar ch = text.at(position - 1);
+        
+        if (ch == '(' || ch == '{' || ch == '[') {
+            // Find matching closing bracket
+            QChar openBracket = ch;
+            QChar closeBracket;
+            if (ch == '(') closeBracket = ')';
+            else if (ch == '{') closeBracket = '}';
+            else closeBracket = ']';
+            
+            int count = 1;
+            for (int i = position; i < text.length(); i++) {
+                if (text.at(i) == openBracket) count++;
+                else if (text.at(i) == closeBracket) count--;
+                
+                if (count == 0) {
+                    bracketPos = i;
+                    bracketLength = 1;
+                    break;
+                }
+            }
+        } else if (ch == ')' || ch == '}' || ch == ']') {
+            // Find matching opening bracket
+            QChar closeBracket = ch;
+            QChar openBracket;
+            if (ch == ')') openBracket = '(';
+            else if (ch == '}') openBracket = '{';
+            else openBracket = '[';
+            
+            int count = 1;
+            for (int i = position - 2; i >= 0; i--) {
+                if (text.at(i) == closeBracket) count++;
+                else if (text.at(i) == openBracket) count--;
+                
+                if (count == 0) {
+                    bracketPos = i;
+                    bracketLength = 1;
+                    break;
+                }
+            }
+        }
+        
+        highlightCurrentLine();
+    }
 
     void lineNumberAreaPaintEvent(QPaintEvent *event) {
         QPainter painter(lineNumberArea);
-        painter.fillRect(event->rect(), Qt::lightGray);
+        painter.fillRect(event->rect(), QColor("#1E1E1E"));
 
         QTextBlock block = firstVisibleBlock();
         int blockNumber = block.blockNumber();
@@ -357,8 +452,8 @@ private slots:
         while (block.isValid() && top <= event->rect().bottom()) {
             if (block.isVisible() && bottom >= event->rect().top()) {
                 QString number = QString::number(blockNumber + 1);
-                painter.setPen(Qt::black);
-                painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(),
+                painter.setPen(QColor("#858585"));
+                painter.drawText(0, top, lineNumberArea->width() - 5, fontMetrics().height(),
                                  Qt::AlignRight, number);
             }
 
@@ -368,6 +463,7 @@ private slots:
             ++blockNumber;
         }
     }
+
 
 private:
     // Line number area widget
