@@ -234,6 +234,15 @@ public:
         return space;
     }
 
+    void toggleWordWrap() {
+        if (lineWrapMode() == QPlainTextEdit::NoWrap) {
+            setLineWrapMode(QPlainTextEdit::WidgetWidth);
+        } else {
+            setLineWrapMode(QPlainTextEdit::NoWrap);
+        }
+    }
+
+
 protected:
     void resizeEvent(QResizeEvent *event) override {
         QPlainTextEdit::resizeEvent(event);
