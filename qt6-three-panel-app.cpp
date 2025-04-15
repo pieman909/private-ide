@@ -282,7 +282,6 @@ public:
 
 
 
-
 protected:
     void resizeEvent(QResizeEvent *event) override {
         QPlainTextEdit::resizeEvent(event);
@@ -290,6 +289,46 @@ protected:
         QRect cr = contentsRect();
         lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
     }
+    
+    void keyPressEvent(QKeyEvent *event) override {
+        if (event->key() == Qt::Key_Tab) {
+            // Insert spaces instead of tab character
+            QTextCursor cursor = textCursor();
+            cursor.insertText("    ");
+            event->accept();
+        } else if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+            // Auto-indentation
+            QTextCursor cursor = textCursor();
+            QString currentLine = cursor.block().text();
+            
+            // Find leading whitespace
+            int indentSize = 0;
+            while (indentSize < currentLine.length() && currentLine.at(indentSize).isSpace()) {
+                indentSize++;
+            }
+            
+            // Default indent
+            QString indent = currentLine.left(indentSize);
+            
+            // Check for conditions that would increase indentation (like ending with '{')
+            if (currentLine.trimmed().endsWith("{") || 
+                currentLine.trimmed().endsWith(":")) {
+                indent += "    ";
+            }
+            
+            QPlainTextEdit::keyPressEvent(event);
+            cursor = textCursor();
+            cursor.insertText(indent);
+        } else {
+            QPlainTextEdit::keyPressEvent(event);
+        }
+        
+        // Update bracket matching
+        if (bracketMatchingEnabled) {
+            matchBrackets();
+        }
+    }
+
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount) {
