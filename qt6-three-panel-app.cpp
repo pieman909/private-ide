@@ -164,9 +164,13 @@ private:
 
     QTextCharFormat keywordFormat;
     QTextCharFormat classFormat;
+    QTextCharFormat functionFormat;
     QTextCharFormat singleLineCommentFormat;
     QTextCharFormat quotationFormat;
+    QTextCharFormat numberFormat;
+    QTextCharFormat preprocessorFormat;
 };
+
 
 // Custom QPlainTextEdit for the code editor
 class CodeEditor : public QPlainTextEdit {
