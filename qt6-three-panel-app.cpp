@@ -120,7 +120,6 @@ public:
         rule.format = preprocessorFormat;
         highlightingRules.append(rule);
     }
-
 protected:
     void highlightBlock(const QString &text) override {
         for (const HighlightingRule &rule : highlightingRules) {
