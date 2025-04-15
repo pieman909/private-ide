@@ -174,18 +174,26 @@ private:
 
 // Custom QPlainTextEdit for the code editor
 class CodeEditor : public QPlainTextEdit {
+    Q_OBJECT
 public:
     CodeEditor(QWidget *parent = nullptr) : QPlainTextEdit(parent) {
-        // Line numbers area width
         lineNumberArea = new LineNumberArea(this);
         
         connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
         connect(this, &CodeEditor::updateRequest, this, &CodeEditor::updateLineNumberArea);
+        connect(this, &CodeEditor::cursorPositionChanged, this, &CodeEditor::highlightCurrentLine);
         
         updateLineNumberAreaWidth(0);
+        highlightCurrentLine();
 
         // Set monospace font
-        QFont font("Courier New", 10);
+        QFont font("Cascadia Code", 10);
+        if (!QFontInfo(font).fixedPitch()) {
+            font.setFamily("Consolas");
+            if (!QFontInfo(font).fixedPitch()) {
+                font.setFamily("Courier New");
+            }
+        }
         font.setFixedPitch(true);
         this->setFont(font);
 
@@ -195,6 +203,23 @@ public:
 
         // Setup syntax highlighter
         highlighter = new CodeHighlighter(this->document());
+        
+        // Set dark theme colors
+        QPalette p = palette();
+        p.setColor(QPalette::Base, QColor("#1E1E1E"));
+        p.setColor(QPalette::Text, QColor("#D4D4D4"));
+        setPalette(p);
+        
+        // Line wrapping
+        setLineWrapMode(QPlainTextEdit::NoWrap);
+        
+        // Enable auto-indentation
+        connect(this, &CodeEditor::textChanged, this, &CodeEditor::handleTextChanged);
+        
+        // Set bracket matching
+        bracketMatchingEnabled = true;
+        bracketPos = -1;
+        bracketLength = 0;
     }
 
     int lineNumberAreaWidth() {
