@@ -49,14 +49,13 @@
 #include <QColor>
 #include <QShortcut>
 
-// Simple syntax highlighter for the code editor
 class CodeHighlighter : public QSyntaxHighlighter {
 public:
     CodeHighlighter(QTextDocument *parent = nullptr) : QSyntaxHighlighter(parent) {
         HighlightingRule rule;
 
         // Keywords
-        keywordFormat.setForeground(Qt::blue);
+        keywordFormat.setForeground(QColor("#569CD6"));
         keywordFormat.setFontWeight(QFont::Bold);
         QStringList keywordPatterns = {
             "\\bclass\\b", "\\bconst\\b", "\\benum\\b", "\\bexplicit\\b",
@@ -70,7 +69,9 @@ public:
             "\\bswitch\\b", "\\bthrow\\b", "\\btry\\b", "\\bwhile\\b",
             "\\bauto\\b", "\\bbool\\b", "\\bchar\\b", "\\bdouble\\b",
             "\\bfloat\\b", "\\bint\\b", "\\blong\\b", "\\bshort\\b",
-            "\\bsigned\\b", "\\bstruct\\b", "\\bunsigned\\b", "\\bvoid\\b"
+            "\\bsigned\\b", "\\bstruct\\b", "\\bunsigned\\b", "\\bvoid\\b",
+            "\\binclude\\b", "\\bdefine\\b", "\\bifdef\\b", "\\bifndef\\b",
+            "\\bendif\\b", "\\bundef\\b", "\\bpragma\\b"
         };
 
         for (const QString &pattern : keywordPatterns) {
@@ -80,21 +81,43 @@ public:
         }
 
         // Class names
-        classFormat.setForeground(Qt::darkMagenta);
+        classFormat.setForeground(QColor("#4EC9B0"));
+        rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+::[A-Za-z0-9_]+\\b");
+        rule.format = classFormat;
+        highlightingRules.append(rule);
+
         rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
         rule.format = classFormat;
         highlightingRules.append(rule);
 
+        // Function calls
+        functionFormat.setForeground(QColor("#DCDCAA"));
+        rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+
         // Single line comments
-        singleLineCommentFormat.setForeground(Qt::darkGreen);
+        singleLineCommentFormat.setForeground(QColor("#6A9955"));
         rule.pattern = QRegularExpression("//[^\n]*");
         rule.format = singleLineCommentFormat;
         highlightingRules.append(rule);
 
         // Quotations
-        quotationFormat.setForeground(Qt::darkRed);
+        quotationFormat.setForeground(QColor("#CE9178"));
         rule.pattern = QRegularExpression("\".*\"");
         rule.format = quotationFormat;
+        highlightingRules.append(rule);
+
+        // Numbers
+        numberFormat.setForeground(QColor("#B5CEA8"));
+        rule.pattern = QRegularExpression("\\b[0-9]+\\b");
+        rule.format = numberFormat;
+        highlightingRules.append(rule);
+
+        // Preprocessor
+        preprocessorFormat.setForeground(QColor("#BD63C5"));
+        rule.pattern = QRegularExpression("#[^\n]*");
+        rule.format = preprocessorFormat;
         highlightingRules.append(rule);
     }
 
