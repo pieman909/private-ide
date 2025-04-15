@@ -1,4 +1,3 @@
-// main.cpp
 #include <QApplication>
 #include <QMainWindow>
 #include <QSplitter>
@@ -11,9 +10,9 @@
 #include <QPushButton>
 #include <QGroupBox>
 #include <QFormLayout>
-//#include <QNetworkAccessManager>
-//#include <QNetworkReply>
-//#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -30,6 +29,25 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 #include <QTextCharFormat>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTabWidget>
+#include <QIcon>
+#include <QScrollBar>
+#include <QFontDialog>
+#include <QDockWidget>
+#include <QListWidget>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QToolButton>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QApplication>
+#include <QClipboard>
+#include <QDateTime>
+#include <QPalette>
+#include <QColor>
+#include <QShortcut>
 
 // Simple syntax highlighter for the code editor
 class CodeHighlighter : public QSyntaxHighlighter {
