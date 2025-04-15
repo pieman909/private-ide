@@ -253,6 +253,12 @@ public:
         }
     }
 
+    void toggleBracketMatching() {
+        bracketMatchingEnabled = !bracketMatchingEnabled;
+        highlightCurrentLine(); // Update to show/hide current bracket matching
+    }
+
+
 
 
 protected:
