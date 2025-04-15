@@ -257,6 +257,28 @@ public:
         bracketMatchingEnabled = !bracketMatchingEnabled;
         highlightCurrentLine(); // Update to show/hide current bracket matching
     }
+    bool save(const QString &fileName) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly | QFile::Text)) {
+            QTextStream out(&file);
+            out << toPlainText();
+            file.close();
+            document()->setModified(false);
+            return true;
+        }
+        return false;
+    }
+    
+    bool load(const QString &fileName) {
+        QFile file(fileName);
+        if (file.open(QFile::ReadOnly | QFile::Text)) {
+            setPlainText(file.readAll());
+            file.close();
+            document()->setModified(false);
+            return true;
+        }
+        return false;
+    }
 
 
 
