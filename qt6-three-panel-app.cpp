@@ -242,6 +242,18 @@ public:
         }
     }
 
+    void changeEditorFont() {
+        bool ok;
+        QFont font = QFontDialog::getFont(&ok, this->font(), this);
+        if (ok) {
+            this->setFont(font);
+            // Update tab stop distance for the new font
+            QFontMetrics metrics(font);
+            this->setTabStopDistance(4 * metrics.horizontalAdvance(' '));
+        }
+    }
+
+
 
 protected:
     void resizeEvent(QResizeEvent *event) override {
