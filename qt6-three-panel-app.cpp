@@ -1,3 +1,4 @@
+// main.cpp
 #include <QApplication>
 #include <QMainWindow>
 #include <QSplitter>
@@ -49,6 +50,7 @@
 #include <QColor>
 #include <QShortcut>
 
+// Syntax highlighter with enhanced styling for code editor
 class CodeHighlighter : public QSyntaxHighlighter {
 public:
     CodeHighlighter(QTextDocument *parent = nullptr) : QSyntaxHighlighter(parent) {
@@ -120,6 +122,7 @@ public:
         rule.format = preprocessorFormat;
         highlightingRules.append(rule);
     }
+
 protected:
     void highlightBlock(const QString &text) override {
         for (const HighlightingRule &rule : highlightingRules) {
@@ -171,8 +174,7 @@ private:
     QTextCharFormat preprocessorFormat;
 };
 
-
-// Custom QPlainTextEdit for the code editor
+// Enhanced code editor with line numbers and syntax highlighting
 class CodeEditor : public QPlainTextEdit {
     Q_OBJECT
 public:
@@ -230,10 +232,10 @@ public:
             ++digits;
         }
 
-        int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+        int space = 20 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
         return space;
     }
-
+    
     void toggleWordWrap() {
         if (lineWrapMode() == QPlainTextEdit::NoWrap) {
             setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -241,7 +243,7 @@ public:
             setLineWrapMode(QPlainTextEdit::NoWrap);
         }
     }
-
+    
     void changeEditorFont() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, this->font(), this);
@@ -252,11 +254,12 @@ public:
             this->setTabStopDistance(4 * metrics.horizontalAdvance(' '));
         }
     }
-
+    
     void toggleBracketMatching() {
         bracketMatchingEnabled = !bracketMatchingEnabled;
         highlightCurrentLine(); // Update to show/hide current bracket matching
     }
+    
     bool save(const QString &fileName) {
         QFile file(fileName);
         if (file.open(QFile::WriteOnly | QFile::Text)) {
@@ -279,8 +282,6 @@ public:
         }
         return false;
     }
-
-
 
 protected:
     void resizeEvent(QResizeEvent *event) override {
@@ -328,7 +329,6 @@ protected:
             matchBrackets();
         }
     }
-
 
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount) {
@@ -464,9 +464,7 @@ private slots:
         }
     }
 
-
 private:
-    // Line number area widget
     class LineNumberArea : public QWidget {
     public:
         LineNumberArea(CodeEditor *editor) : QWidget(editor), codeEditor(editor) {}
@@ -486,55 +484,244 @@ private:
 
     LineNumberArea *lineNumberArea;
     CodeHighlighter *highlighter;
+    bool bracketMatchingEnabled;
+    int bracketPos;
+    int bracketLength;
 };
 
-// Terminal emulator widget
+// File tree widget to display project structure
+class ProjectTreeWidget : public QTreeWidget {
+    Q_OBJECT
+public:
+    ProjectTreeWidget(QWidget *parent = nullptr) : QTreeWidget(parent) {
+        setHeaderLabel("Project Files");
+        setColumnCount(1);
+        setSortingEnabled(true);
+        
+        // Set style
+        setStyleSheet("QTreeWidget { background-color: #252526; color: #D4D4D4; border: none; }");
+        
+        // Add sample project structure
+        addSampleProjectStructure();
+        
+        // Connect signals
+        connect(this, &QTreeWidget::itemDoubleClicked, this, &ProjectTreeWidget::onItemDoubleClicked);
+    }
+    
+    void addSampleProjectStructure() {
+        // Root item
+        QTreeWidgetItem *projectRoot = new QTreeWidgetItem(this);
+        projectRoot->setText(0, "Project");
+        projectRoot->setIcon(0, style()->standardIcon(QStyle::SP_DirIcon));
+        projectRoot->setExpanded(true);
+        
+        // Source directory
+        QTreeWidgetItem *srcDir = new QTreeWidgetItem(projectRoot);
+        srcDir->setText(0, "src");
+        srcDir->setIcon(0, style()->standardIcon(QStyle::SP_DirIcon));
+        srcDir->setExpanded(true);
+        
+        // Source files
+        QTreeWidgetItem *mainCpp = new QTreeWidgetItem(srcDir);
+        mainCpp->setText(0, "main.cpp");
+        mainCpp->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+        
+        QTreeWidgetItem *appCpp = new QTreeWidgetItem(srcDir);
+        appCpp->setText(0, "application.cpp");
+        appCpp->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+        
+        QTreeWidgetItem *appH = new QTreeWidgetItem(srcDir);
+        appH->setText(0, "application.h");
+        appH->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+        
+        // Include directory
+        QTreeWidgetItem *includeDir = new QTreeWidgetItem(projectRoot);
+        includeDir->setText(0, "include");
+        includeDir->setIcon(0, style()->standardIcon(QStyle::SP_DirIcon));
+        
+        // Build directory
+        QTreeWidgetItem *buildDir = new QTreeWidgetItem(projectRoot);
+        buildDir->setText(0, "build");
+        buildDir->setIcon(0, style()->standardIcon(QStyle::SP_DirIcon));
+        
+        // Config files
+        QTreeWidgetItem *cmakeFile = new QTreeWidgetItem(projectRoot);
+        cmakeFile->setText(0, "CMakeLists.txt");
+        cmakeFile->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+        
+        QTreeWidgetItem *readmeFile = new QTreeWidgetItem(projectRoot);
+        readmeFile->setText(0, "README.md");
+        readmeFile->setIcon(0, style()->standardIcon(QStyle::SP_FileIcon));
+    }
+
+signals:
+    void openFile(const QString &filePath);
+
+private slots:
+    void onItemDoubleClicked(QTreeWidgetItem *item, int column) {
+        // Ignore directories
+        if (!item || item->childCount() > 0) {
+            return;
+        }
+        
+        // Get full path - in a real app, you'd build this from the actual file system
+        QString filePath = getItemPath(item);
+        emit openFile(filePath);
+    }
+    
+private:
+    QString getItemPath(QTreeWidgetItem *item) {
+        if (!item) {
+            return QString();
+        }
+        
+        QString path = item->text(0);
+        QTreeWidgetItem *parent = item->parent();
+        
+        while (parent) {
+            path = parent->text(0) + "/" + path;
+            parent = parent->parent();
+        }
+        
+        return path;
+    }
+};
+
+// Enhanced terminal widget with better styling and features
 class TerminalWidget : public QWidget {
     Q_OBJECT
 public:
     TerminalWidget(QWidget *parent = nullptr) : QWidget(parent) {
         QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setSpacing(0);
+        
+        // Command history
+        commandHistory = QStringList();
+        historyIndex = -1;
+        
+        // Terminal toolbar
+        QHBoxLayout *toolbarLayout = new QHBoxLayout();
+        toolbarLayout->setContentsMargins(5, 5, 5, 5);
+        
+        QLabel *termLabel = new QLabel("Terminal", this);
+        termLabel->setStyleSheet("color: #BBBBBB; font-weight: bold;");
+        
+        clearButton = new QToolButton(this);
+        clearButton->setIcon(style()->standardIcon(QStyle::SP_DialogResetButton));
+        clearButton->setToolTip("Clear Terminal");
+        connect(clearButton, &QToolButton::clicked, this, &TerminalWidget::clearTerminal);
+        
+        QToolButton *configButton = new QToolButton(this);
+        configButton->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
+        configButton->setToolTip("Terminal Settings");
+        
+        toolbarLayout->addWidget(termLabel);
+        toolbarLayout->addStretch();
+        toolbarLayout->addWidget(clearButton);
+        toolbarLayout->addWidget(configButton);
         
         // Terminal output display
         outputDisplay = new QPlainTextEdit(this);
         outputDisplay->setReadOnly(true);
-        QFont font("Courier New", 10);
+        QFont font("Cascadia Code", 10);
+        if (!QFontInfo(font).fixedPitch()) {
+            font.setFamily("Consolas");
+            if (!QFontInfo(font).fixedPitch()) {
+                font.setFamily("Courier New");
+            }
+        }
         font.setFixedPitch(true);
         outputDisplay->setFont(font);
-        outputDisplay->setStyleSheet("background-color: #2D2D30; color: #DCDCDC;");
+        outputDisplay->setStyleSheet("QPlainTextEdit { background-color: #1E1E1E; color: #D4D4D4; border: none; }");
+        
+        // Command prompt layout
+        QHBoxLayout *promptLayout = new QHBoxLayout();
+        promptLayout->setContentsMargins(5, 5, 5, 5);
+        
+        // Prompt label
+        QLabel *promptLabel = new QLabel(">", this);
+        promptLabel->setStyleSheet("color: #569CD6; font-weight: bold;");
         
         // Command input
         commandInput = new QLineEdit(this);
-        commandInput->setStyleSheet("background-color: #2D2D30; color: #DCDCDC;");
-        commandInput->setPlaceholderText("Enter command...");
+        commandInput->setStyleSheet("QLineEdit { background-color: #1E1E1E; color: #D4D4D4; border: none; }");
+        commandInput->setFont(font);
         
-        connect(commandInput, &QLineEdit::returnPressed, this, &TerminalWidget::executeCommand);
+        promptLayout->addWidget(promptLabel);
+        promptLayout->addWidget(commandInput);
         
+        // Add all components to main layout
+        layout->addLayout(toolbarLayout);
         layout->addWidget(outputDisplay);
-        layout->addWidget(commandInput);
+        layout->addLayout(promptLayout);
         
         // Set up process
         process = new QProcess(this);
         connect(process, &QProcess::readyReadStandardOutput, this, &TerminalWidget::readOutput);
         connect(process, &QProcess::readyReadStandardError, this, &TerminalWidget::readError);
         
+        // Connect command input
+        connect(commandInput, &QLineEdit::returnPressed, this, &TerminalWidget::executeCommand);
+        
+        // Set up keyboard shortcuts for history navigation
+        QShortcut *upShortcut = new QShortcut(Qt::Key_Up, commandInput);
+        connect(upShortcut, &QShortcut::activated, this, &TerminalWidget::navigateHistoryUp);
+        
+        QShortcut *downShortcut = new QShortcut(Qt::Key_Down, commandInput);
+        connect(downShortcut, &QShortcut::activated, this, &TerminalWidget::navigateHistoryDown);
+        
         // Welcome message
-        outputDisplay->appendPlainText("Terminal Ready - Enter commands below");
+        outputDisplay->appendHtml("<span style='color: #569CD6;'>Terminal Ready</span>");
+        outputDisplay->appendPlainText("Type 'help' for available commands");
         outputDisplay->appendPlainText("-------------------------------------");
     }
 
 private slots:
     void executeCommand() {
-        QString command = commandInput->text();
+        QString command = commandInput->text().trimmed();
+        if (command.isEmpty()) {
+            return;
+        }
+        
+        // Add to history
+        addToHistory(command);
+        
+        // Clear input
         commandInput->clear();
         
-        outputDisplay->appendPlainText("> " + command);
+        outputDisplay->appendHtml("<span style='color: #DCDCAA;'>> " + command.toHtmlEscaped() + "</span>");
         
+        // Handle built-in commands
+        if (command == "clear" || command == "cls") {
+            clearTerminal();
+            return;
+        } else if (command == "help") {
+            showHelp();
+            return;
+        } else if (command.startsWith("echo ")) {
+            outputDisplay->appendPlainText(command.mid(5));
+            return;
+        }
+        
+        // Execute external command
 #ifdef Q_OS_WIN
         process->start("cmd.exe", QStringList() << "/c" << command);
 #else
         process->start("/bin/sh", QStringList() << "-c" << command);
 #endif
+    }
+    
+    void clearTerminal() {
+        outputDisplay->clear();
+    }
+    
+    void showHelp() {
+        outputDisplay->appendHtml("<span style='color: #569CD6;'>Available Commands:</span>");
+        outputDisplay->appendHtml("<span style='color: #DCDCAA;'>clear/cls</span> - Clear terminal output");
+        outputDisplay->appendHtml("<span style='color: #DCDCAA;'>echo [text]</span> - Display text");
+        outputDisplay->appendHtml("<span style='color: #DCDCAA;'>help</span> - Show this help message");
+        outputDisplay->appendPlainText("Any other command will be executed in the system shell");
     }
     
     void readOutput() {
@@ -544,14 +731,62 @@ private slots:
     
     void readError() {
         QByteArray error = process->readAllStandardError();
-        outputDisplay->appendHtml("<span style='color: #FF6B68;'>" + 
+        outputDisplay->appendHtml("<span style='color: #F14C4C;'>" + 
                                   QString::fromLocal8Bit(error).toHtmlEscaped() + "</span>");
+    }
+    
+    void addToHistory(const QString &command) {
+        // Don't add duplicates consecutively
+        if (!commandHistory.isEmpty() && commandHistory.last() == command) {
+            historyIndex = commandHistory.size();
+            return;
+        }
+        
+        commandHistory.append(command);
+        historyIndex = commandHistory.size();
+        
+        // Limit history size
+        if (commandHistory.size() > 50) {
+            commandHistory.removeFirst();
+        }
+    }
+    
+    void navigateHistoryUp() {
+        if (commandHistory.isEmpty() || historyIndex <= 0) {
+            return;
+        }
+        
+        // Store current input if at end of history
+        if (historyIndex == commandHistory.size()) {
+            currentInput = commandInput->text();
+        }
+        
+        historyIndex--;
+        commandInput->setText(commandHistory.at(historyIndex));
+    }
+    
+    void navigateHistoryDown() {
+        if (historyIndex >= commandHistory.size()) {
+            return;
+        }
+        
+        historyIndex++;
+        
+        if (historyIndex == commandHistory.size()) {
+            commandInput->setText(currentInput);
+        } else {
+            commandInput->setText(commandHistory.at(historyIndex));
+        }
     }
 
 private:
     QPlainTextEdit *outputDisplay;
     QLineEdit *commandInput;
+    QToolButton *clearButton;
     QProcess *process;
+    QStringList commandHistory;
+    int historyIndex;
+    QString currentInput;
 };
 
 // Gemini API client widget
