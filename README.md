@@ -1,4 +1,4 @@
-# private-ide
+# qt-ide
 
 Under active development
 
