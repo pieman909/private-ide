@@ -1,4 +1,3 @@
-# Makefile for building: tester
 # Command: /home/spurdo_sparde/Qt/6.8.2/gcc_64/bin/qmake -o Makefile ../../tester.pro -spec linux-g++ CONFIG+=debug CONFIG+=qml_debug
 #############################################################################
 
