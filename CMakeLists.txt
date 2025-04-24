@@ -16,7 +16,6 @@ target_link_libraries(DevEnvironment PRIVATE
     Qt6::Network
 )
 
-# For Windows: to add application icon and metadata
 if(WIN32)
     set_target_properties(DevEnvironment PROPERTIES
         WIN32_EXECUTABLE TRUE
