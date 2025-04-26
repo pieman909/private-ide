@@ -1,4 +1,4 @@
-// main.cpp
+
 #include <QApplication>
 #include <QMainWindow>
 #include <QSplitter>
