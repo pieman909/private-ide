@@ -49,7 +49,6 @@
 #include <QColor>
 #include <QShortcut>
 
-// Syntax highlighter with enhanced styling for code editor
 class CodeHighlighter : public QSyntaxHighlighter {
 public:
     CodeHighlighter(QTextDocument *parent = nullptr) : QSyntaxHighlighter(parent) {
