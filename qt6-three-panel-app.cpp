@@ -131,7 +131,6 @@ protected:
             }
         }
 
-        // Multi-line comments
         setCurrentBlockState(0);
         
         int startIndex = 0;
