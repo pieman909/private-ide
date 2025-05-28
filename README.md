@@ -2,7 +2,6 @@
 
 Under active development
 
-3 panel text editor meant for rapidly prototyping and iterating  with Google's free tier Gemini API. Support for local models coming soon.
 ---
 
 Dependency list:
